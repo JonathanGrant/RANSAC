@@ -3,6 +3,11 @@
 #include <Eigen/Dense>
 #include <algorithm>
 
+int getNumTrials(double p, int numInliers, int numPoints) {
+  // The 0.5 is for rounding.
+  return (int) (0.5 + log(1 - p) / log(1 - pow((numInliers / (double) numPoints), 3)));
+}
+
 void swap(PlyPoint p1, PlyPoint p2) {
   PlyPoint temp = p1;
   p1 = p2;
@@ -15,10 +20,12 @@ Eigen::Matrix<double, 3, 1> getNormalUnitVectorFromThreePoints(PlyPoint p1, PlyP
 }
 
 double distanceFromPlane(Eigen::Matrix<double, 3, 1> normalUnitVector, PlyPoint pointOnPlane, PlyPoint otherPoint) {
-  return normalUnitVector.dot(pointOnPlane.location - otherPoint.location);
+  return normalUnitVector.dot(std::abs(pointOnPlane.location - otherPoint.location));
 }
 
 SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTrials) {
+  int numPointsInSet = ply.size();
+
   // Get the colors ready
   std::vector<Eigen::Vector3i> colors;
   colors.push_back(Eigen::Vector3i(0,0,0));
@@ -41,8 +48,12 @@ SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTria
   SimplePly output;
   for(int nPlanesFound = 0; nPlanesFound < nPlanes; nPlanesFound++) {
     std::cout << "RANSAC loop " << nPlanesFound + 1 << std::endl;
+    if (ply.size() <= numPointsInSet * 0.1) {
+      break;
+    }
     std::vector<int> mostPointIndexesOnPlane;
-    for(int currTrial = 0; currTrial < nTrials; currTrial++) {
+    int currTrial = 0;
+    do {
       std::cout << "RANSAC trial " << currTrial + 1 << std::endl;
       // Get three random points from ply
       PlyPoint p1 = ply[rand() % ply.size()];
@@ -56,7 +67,9 @@ SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTria
       if(pointIndexesOnPlane.size() > mostPointIndexesOnPlane.size()) {
         mostPointIndexesOnPlane = pointIndexesOnPlane;
       }
-    }
+      currTrial++;
+      std::cout << "Num trials togo: " << getNumTrials(0.9, mostPointIndexesOnPlane.size(), ply.size()) << std::endl;
+    } while(currTrial < getNumTrials(0.9, mostPointIndexesOnPlane.size(), ply.size()));
     // Color the points, add them to the output, and remove them from ply
     for(int pointIndex = mostPointIndexesOnPlane.size() - 1; pointIndex >= 0; pointIndex--) {
       // Color them from one of 15 distinct colors.
@@ -70,6 +83,9 @@ SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTria
       ply.pop_back();
     }
   }
+
+  std::cout << "Finished RANSAC with " << ply.size() << " points left." << std::endl;
+
   return output;
 }
 
