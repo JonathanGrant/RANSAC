@@ -18,7 +18,7 @@ double distanceFromPlane(Eigen::Matrix<double, 3, 1> normalUnitVector, PlyPoint 
   return normalUnitVector.dot(pointOnPlane.location - otherPoint.location);
 }
 
-void RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTrials, SimplePly output) {
+SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTrials) {
   // Get the colors ready
   std::vector<Eigen::Vector3i> colors;
   colors.push_back(Eigen::Vector3i(0,0,0));
@@ -38,7 +38,7 @@ void RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTrials, S
   colors.push_back(Eigen::Vector3i(127,127,127));
 
   std::cout << "Starting RANSAC" << std::endl;
-
+  SimplePly output;
   for(int nPlanesFound = 0; nPlanesFound < nPlanes; nPlanesFound++) {
     std::cout << "RANSAC loop " << nPlanesFound + 1 << std::endl;
     std::vector<int> mostPointIndexesOnPlane;
@@ -70,6 +70,7 @@ void RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTrials, S
       ply.pop_back();
     }
   }
+  return output;
 }
 
 int main (int argc, char *argv[]) {
@@ -99,8 +100,7 @@ int main (int argc, char *argv[]) {
   std::cout << "Read " << ply.size() << " points" << std::endl;
 
   // Do the Ransac
-  SimplePly output;
-  RansacAndColor(ply, nPlanes, threshold, nTrials, output);
+  SimplePly output = RansacAndColor(ply, nPlanes, threshold, nTrials);
 
   // Write the resulting (re-coloured) point cloud to a PLY file.
   std::cout << "Writing PLY data to " << argv[2] << std::endl;
