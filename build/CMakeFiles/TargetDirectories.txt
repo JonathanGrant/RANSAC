@@ -1,0 +1,3 @@
+/Users/jonathangrant/otago/gr/PlaneFinder/build/CMakeFiles/rebuild_cache.dir
+/Users/jonathangrant/otago/gr/PlaneFinder/build/CMakeFiles/edit_cache.dir
+/Users/jonathangrant/otago/gr/PlaneFinder/build/CMakeFiles/planeFinder.dir

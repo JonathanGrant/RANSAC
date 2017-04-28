@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/jonathangrant/otago/gr/PlaneFinder/rply.c
+stdio.h
+-
+ctype.h
+-
+assert.h
+-
+string.h
+-
+limits.h
+-
+float.h
+-
+stdarg.h
+-
+stdlib.h
+-
+stddef.h
+-
+rply.h
+/Users/jonathangrant/otago/gr/PlaneFinder/rply.h
+rplyfile.h
+/Users/jonathangrant/otago/gr/PlaneFinder/rplyfile.h
+stdint.h
+-
+
+/Users/jonathangrant/otago/gr/PlaneFinder/rply.h
+
+/Users/jonathangrant/otago/gr/PlaneFinder/rplyfile.h
+
