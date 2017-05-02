@@ -8,19 +8,14 @@ int getNumTrials(double p, int numInliers, int numPoints) {
   return (int) (0.5 + log(1 - p) / log(1 - pow((numInliers / (double) numPoints), 3)));
 }
 
-void swap(PlyPoint p1, PlyPoint p2) {
-  PlyPoint temp = p1;
-  p1 = p2;
-  p2 = temp;
-}
-
 Eigen::Matrix<double, 3, 1> getNormalUnitVectorFromThreePoints(PlyPoint p1, PlyPoint p2, PlyPoint p3) {
   Eigen::Matrix<double, 3, 1> unitVector = (p3.location - p1.location).cross(p2.location - p1.location);
   return unitVector / unitVector.norm();
 }
 
 double distanceFromPlane(Eigen::Matrix<double, 3, 1> normalUnitVector, PlyPoint pointOnPlane, PlyPoint otherPoint) {
-  return normalUnitVector.dot(std::abs(pointOnPlane.location - otherPoint.location));
+  double dist = std::abs(normalUnitVector.dot(pointOnPlane.location - otherPoint.location));
+  return dist;
 }
 
 SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTrials) {
@@ -70,6 +65,9 @@ SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTria
       currTrial++;
       std::cout << "Num trials togo: " << getNumTrials(0.9, mostPointIndexesOnPlane.size(), ply.size()) << std::endl;
     } while(currTrial < getNumTrials(0.9, mostPointIndexesOnPlane.size(), ply.size()));
+    
+    std::cout << "Number of points on this plane: " << mostPointIndexesOnPlane.size() << std::endl;
+
     // Color the points, add them to the output, and remove them from ply
     for(int pointIndex = mostPointIndexesOnPlane.size() - 1; pointIndex >= 0; pointIndex--) {
       // Color them from one of 15 distinct colors.
@@ -78,8 +76,10 @@ SimplePly RansacAndColor(SimplePly ply, int nPlanes, double threshold, int nTria
       // Add to the output
       output.push_back(ply[pointIndex]);
 
-      // Fastest way to remove
-      swap(ply[pointIndex], ply.back());
+      // Fastest way to remove, by swapping:
+      PlyPoint temp = ply[pointIndex];
+      ply[pointIndex] = ply[ply.size() - 1];
+      ply[ply.size() - 1] = temp;
       ply.pop_back();
     }
   }
